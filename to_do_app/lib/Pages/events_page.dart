@@ -98,15 +98,6 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
-  Widget _displayTime(String time) {
-    return Container(
-        width: 80,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(time),
-        ));
-  }
-
   _launchURL() async {
     const url = 'https://flutter.dev';
     if (await canLaunch(url)) {
@@ -115,5 +106,10 @@ class _EventPageState extends State<EventPage> {
       throw 'Could not launch $url';
     }
   }
+
+  _changeStatus(){
+
+  }
+
 
 }

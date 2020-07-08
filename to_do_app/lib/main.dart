@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/Pages/about.dart';
+import 'package:todoapp/Pages/login.dart';
+import 'Pages/splashScreen.dart';
 import 'Pages/tasks_page.dart';
 import 'Pages/events_page.dart';
-import 'Pages/main_content.dart';
+import 'Pages/main_content_tasks.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -14,7 +17,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: MyHomePage(),
+      home: SplashScreen(),
+      routes: <String, WidgetBuilder> {
+        '/login': (BuildContext context) => new LoginPage(),
+        '/about': (BuildContext context)=> new AboutPage()
+      },
     );
   }
 }
