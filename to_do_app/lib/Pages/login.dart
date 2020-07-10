@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import './tasks_page.dart';
-import './events_page.dart';
-import './main_content_tasks.dart';
+
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
+import 'package:toast/toast.dart';
 
 class LoginPage extends StatefulWidget {
 
@@ -14,6 +17,38 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  String mobile;
+  String password;
+  bool _isUploading=false;
+  String url;
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+
+  String getMobile(){
+    setMobile();
+    return mobile;
+  }
+
+  String getPassword(){
+    setPassword();
+    return password;
+  }
+
+  void setMobile(){
+    this.mobile=usernameController.text.toString();
+  }
+
+  void setPassword(){
+    this.password=passwordController.text.toString();
+  }
+
+  void _resetState() {
+    setState(() {
+      _isUploading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +75,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   _login(BuildContext context){
-    return Padding(
-      padding: EdgeInsets.all(12.0),
-      child:Column(
+    return Form(
+      key: _formKey,
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -57,7 +92,14 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.all(24.0),
-              child:TextField(
+              child:TextFormField(
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Username is required';
+                  }
+                  return null;
+                },
+                controller: usernameController,
                 obscureText: false,
                 cursorColor: Theme.of(context).accentColor,
                 style: TextStyle(fontSize: 15.0),
@@ -70,7 +112,14 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
             padding: EdgeInsets.all(24.0),
-            child:TextField(
+            child:TextFormField(
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Password is required';
+                }
+                return null;
+              },
+              controller: passwordController,
               obscureText: true,
               cursorColor: Theme.of(context).accentColor,
               style: TextStyle(fontSize: 15.0),
@@ -83,10 +132,10 @@ class _LoginPageState extends State<LoginPage> {
           ),
           MaterialButton(
             onPressed: (){
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MainContent()),
-              );
+              if (_formKey.currentState.validate()) {
+                _uploadCredentials();
+              }
+
             },
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),side: BorderSide(color:Theme.of(context).accentColor )),
             child: Text("Login"),
@@ -96,8 +145,71 @@ class _LoginPageState extends State<LoginPage> {
 
           ),
         ],
-
       ),
     );
   }
+
+  String getURL() {
+    String url = 'http://192.168.8.108:3000/user/' +
+        getMobile() + '/' +
+        getPassword();
+    return url;
+  }
+
+  void navigateToTasks() {
+    Navigator.of(context).pushReplacementNamed('/tasks');
+  }
+
+  Future<Map<String, dynamic>> _uploadCredentials() async {
+    print("came");
+    print(getURL());
+    setState(() {
+      _isUploading = true;
+    });
+    try {
+      final response = await http.get(getURL());
+      if (response.statusCode == 200) {
+        print("200");
+        final Map<String, dynamic> prediction = json.decode(response.body);
+//        _resetState();
+        print(prediction);
+        Toast.show("Login successful!", context,
+            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        navigateToTasks();
+        return prediction;
+      } else {
+        print(response.toString());
+        Toast.show("Login failed! Please retry.", context,
+            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        print ("null");
+        Alert(
+          style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ),
+          context: context,
+//          type: AlertType.warning,
+          title: "Error",
+          desc: "Failed to login",
+          buttons: [
+            DialogButton(
+              color: Colors.green.withOpacity(0.75),
+              child: Text(
+                "Retry",
+                style: TextStyle(color: Colors.white, fontSize: 17),
+              ),
+              onPressed: () => Navigator.pop(context),
+              width: 120,
+            )
+          ],
+        ).show();
+        return null;
+      }
+    } catch (e) {
+      Toast.show("Login failed! Please retry.", context,
+          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      print (e);
+      return null;
+    }
+  }
+
+
+
 }

@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:todoapp/Pages/main_content_leaderBoard.dart';
-import './tasks_page.dart';
-import './events_page.dart';
+import 'package:todoapp/Pages/events_page.dart';
+
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
+import 'package:toast/toast.dart';
 
 class MainContent extends StatefulWidget {
 
@@ -10,7 +15,7 @@ class MainContent extends StatefulWidget {
 }
 
 class _MainContentState extends State<MainContent> {
-
+  bool _isUploading=false;
   @override
   Widget build(BuildContext context) {
 
@@ -31,7 +36,7 @@ class _MainContentState extends State<MainContent> {
             MaterialPageRoute(builder: (context) => MainContentLeaderboard()),
           );
         },
-        tooltip: 'Increment',
+        tooltip: 'Leaderboard',
         child: Icon(Icons.star_half),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -46,6 +51,7 @@ class _MainContentState extends State<MainContent> {
               onPressed: (){
                 Navigator.of(context).pushReplacementNamed('/about');
               },
+              tooltip: "About us",
             )
           ],
         ),
@@ -68,5 +74,41 @@ class _MainContentState extends State<MainContent> {
 
       ],
     );
+  }
+  String getURL() {
+    String url = 'http://192.168.8.108:3000/tasks';
+    return url;
+  }
+
+  Future<Map<String, dynamic>> _uploadCredentials() async {
+    print("came");
+    print(getURL());
+    setState(() {
+      _isUploading = true;
+    });
+    try {
+      final response = await http.get(getURL());
+      if (response.statusCode == 200) {
+        print("200");
+        final Map<String, dynamic> tasks = json.decode(response.body);
+//        _resetState();
+        print(tasks);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventPage(
+                  taskList: tasks)
+          ),
+        );
+        return tasks;
+      } else {
+        print(response.toString());
+        print ("null");
+        return null;
+      }
+    } catch (e) {
+      print (e);
+      return null;
+    }
   }
 }

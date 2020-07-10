@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import './tasks_page.dart';
 import './events_page.dart';
 import './main_content_tasks.dart';
 

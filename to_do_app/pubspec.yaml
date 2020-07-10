@@ -17,6 +17,9 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  http: ^0.12.1
+  toast: ^0.1.5
+  rflutter_alert: ^1.0.3
   url_launcher: ^5.4.11
   flutter:
     sdk: flutter
@@ -29,6 +32,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+
+assets:
+  -assets/re-tree_logo.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

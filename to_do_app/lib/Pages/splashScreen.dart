@@ -27,28 +27,13 @@ class _SplashScreenState extends State<SplashScreen> {
     return new Scaffold(
         body: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).accentColor,
             ),
             child:Center(
-              child:Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(24.0),
-                    child:Text("ReTree-Sri Lanka",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                          color: Colors.white
-                      ),
-                    ),
-                    ),
-
-                  ]
-              ) ,
+                child:Text("ReTree-Sri Lanka",
+                style:TextStyle(fontSize: 25,fontWeight: FontWeight.w400 ,color: Colors.white))
             )
-        )
+        ) ,
     );
   }
 }

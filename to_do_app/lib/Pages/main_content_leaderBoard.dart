@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/Pages/leaderBoard.dart';
 import './main_content_tasks.dart';
-import './tasks_page.dart';
 import './events_page.dart';
 
 class MainContentLeaderboard extends StatefulWidget {
@@ -32,7 +31,7 @@ class _MainContentLeaderboardState extends State<MainContentLeaderboard> {
             MaterialPageRoute(builder: (context) => MainContent()),
           );
         },
-        tooltip: 'Increment',
+        tooltip: 'Tasks',
         child: Icon(Icons.view_list),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -47,6 +46,7 @@ class _MainContentLeaderboardState extends State<MainContentLeaderboard> {
               onPressed: (){
                 Navigator.of(context).pushReplacementNamed('/about');
               },
+              tooltip: "About us",
             )
           ],
         ),
