@@ -20,7 +20,10 @@ dependencies:
   http: ^0.12.1
   toast: ^0.1.5
   rflutter_alert: ^1.0.3
+  shared_preferences: ^0.5.8
   url_launcher: ^5.4.11
+  liquid_progress_indicator: ^0.3.2
+  build_runner: ^1.10.2
   flutter:
     sdk: flutter
 
@@ -34,7 +37,7 @@ dev_dependencies:
 
 
 assets:
-  -assets/re-tree_logo.png
+  -assets/logo.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -48,9 +51,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

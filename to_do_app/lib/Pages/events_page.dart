@@ -1,41 +1,49 @@
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todoapp/Pages/progressBar.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+
+import './Event.dart';
 class EventPage extends StatefulWidget {
-  final Map<String,dynamic> taskList;
+  final List<Event> taskList;
   const EventPage({@required this.taskList});
 
   @override
   _EventPageState createState() => _EventPageState(this.taskList);
 }
 
-class Event {
-  final String task;
-  final String desc;
-  final int status;
-  final String url;
-
-  const Event( this.task, this.desc, this.status,this.url);
-}
-
 class _EventPageState extends State<EventPage> {
-  List<Event> _eventList=[
-    new Event("Task 1","description 1",1,"https://flutter.dev/docs/cookbook/forms/validation"),
-    new Event("Task 2","description 2",2,"https://flutter.dev/docs/cookbook/forms/validation"),
-    new Event("Task 3","description 3",3,"https://flutter.dev/docs/cookbook/forms/validation"),
-    new Event("Task 4","description 4",1,"https://flutter.dev/docs/cookbook/forms/validation"),
-    new Event("Task 5","description 5",2,"https://flutter.dev/docs/cookbook/forms/validation"),
-    new Event("Task 6","description 6",3,"https://flutter.dev/docs/cookbook/forms/validation"),
-  ];
-  final Map<String,dynamic> taskList;
-  int status;
+  final List<dynamic> _eventList;
   Widget text;
-  _EventPageState(this.taskList);
+  bool _updating=false;
+  _EventPageState(this._eventList);
+
+  Future _onUpdate() async {
+    setState(() {
+      _updating = true;
+    });
+    print("onupdate");
+    print (_updating);
+  }
+
+  Future _updated() async{
+    await Future.delayed(Duration(seconds: 2));
+    setState((){
+      _updating = false;
+    });
+    print("updated");
+    print (_updating);
+    navigateToTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    return ListView.builder(
+    var list= ListView.builder(
       itemCount: _eventList.length,
       padding: const EdgeInsets.all(0),
       itemBuilder: (context, index) {
@@ -49,13 +57,33 @@ class _EventPageState extends State<EventPage> {
         );
       },
     );
+    var loading=Center(
+      child: new SizedBox(
+        height: 120.0,
+        width: 120.0,
+        child: LiquidCircularProgressIndicator(
+          value: 0.40, // Defaults to 0.5.
+          valueColor: AlwaysStoppedAnimation(Colors.green), // Defaults to the current Theme's accentColor.
+          backgroundColor: Colors.white, // Defaults to the current Theme's backgroundColor.
+          borderColor: Colors.lightGreen,
+          borderWidth: 1.0,
+          direction: Axis.vertical, // The direction the liquid moves (Axis.vertical = bottom to top, Axis.horizontal = left to right). Defaults to Axis.vertical.
+          center: Text("Updating..."),
+        ),
+      ),
+    );
+    if (_updating){
+      return loading;
+    }else{
+      return list;
+    }
   }
 
   Widget _displayContent(Event event) {
     final ValueNotifier<int> _counter = ValueNotifier<int>(event.status);
-    status=event.status;
+    int status=event.status;
     text=_buildStatusButton(status);
-    return Expanded(
+    var content= Expanded(
       child: Padding(
         padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
         child: Container(
@@ -96,30 +124,32 @@ class _EventPageState extends State<EventPage> {
                 padding: EdgeInsets.only(right: 12.0),
                   child:MaterialButton(
                     minWidth: 120.0,
-                onPressed: (){
-                      if (_counter.value==1){
-                        _counter.value=2;
-                        print("1 to 2");
-                      }else if(_counter.value==2){
-                        _counter.value=3;
-                        print("2 to 3");
-                      }else if(_counter.value==3){
-                        _counter.value=1;
-                        print("3 to 1");
-                      }
-
+                onPressed: () async {
+                  bool updated=await getId(_counter.value, event.taskId);
+                  if (updated==true){
+                    if (_counter.value == 1) {
+                      _counter.value = 2;
+                      print("1 then 2");
+                    } else if (_counter.value == 2) {
+                      _counter.value = 3;
+                      print("2 then 3");
+                    } else if (_counter.value == 3) {
+                      _counter.value = 1;
+                      print("3 then 1");
+                    }
+                  }
+                  print("hiii");
+                  print(_counter.value);
+                  setState(() {
+                    text=_buildStatusButton(_counter.value);
+                  });
                 },
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ValueListenableBuilder(
                   builder: (BuildContext context, int value, Widget child) {
-                    // This builder will only get called when the _counter
-                    // is updated.
                     return _buildStatusButton(value);
                   },
                   valueListenable: _counter,
-                  // The child parameter is most helpful if the child is
-                  // expensive to build and does not depend on the value from
-                  // the notifier.
                 ),
                 textColor: Colors.green,
                 padding: EdgeInsets.all(14.0),
@@ -132,6 +162,23 @@ class _EventPageState extends State<EventPage> {
         ),
       ),
     );
+    var loading=Center(
+      child: new SizedBox(
+        height: 120.0,
+        width: 120.0,
+        child: LiquidCircularProgressIndicator(
+          value: 0.40, // Defaults to 0.5.
+          valueColor: AlwaysStoppedAnimation(Colors.green), // Defaults to the current Theme's accentColor.
+          backgroundColor: Colors.white, // Defaults to the current Theme's backgroundColor.
+          borderColor: Colors.lightGreen,
+          borderWidth: 2.0,
+          direction: Axis.vertical, // The direction the liquid moves (Axis.vertical = bottom to top, Axis.horizontal = left to right). Defaults to Axis.vertical.
+          center: Text("Loading..."),
+        ),
+      ),
+    );
+
+      return content;
   }
 
   Future<void> _launchInBrowser(String url) async {
@@ -143,26 +190,113 @@ class _EventPageState extends State<EventPage> {
         headers: <String, String>{'my_header_key': 'my_header_value'},
       );
     } else {
+//      int id= await getId();
+//      print(id);
       throw 'Could not launch $url';
     }
   }
 
-  _changeStatus(){
-
+  Future<bool> getId(int status,int taskId) async {
+//    print("getid");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int userId = prefs.getInt('userId');
+//    print(userId);
+    await _onUpdate();
+    try {
+      status=await changeStatus(status);
+      final response = await http.get(getURL(userId,taskId,status));
+      if (response.statusCode == 200) {
+        print("200");
+        final Map<String, dynamic> resp = json.decode(response.body);
+        print(resp);
+        await _updated();
+        return true;
+      } else {
+        print ("response");
+        print(response.toString());
+        _updated();
+        Alert(
+          style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ,isCloseButton: false,
+            isOverlayTapDismiss: false,titleStyle: TextStyle(
+              fontSize: 17.0,fontWeight: FontWeight.w600,
+            ),descStyle: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,color: Colors.black45),),
+          context: context,
+          title: "Error",
+          desc: "Failed to update the activity status",
+          buttons: [
+            DialogButton(
+              color: Colors.transparent,
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Colors.green, fontSize: 20,fontWeight: FontWeight.w500),
+              ),
+              onPressed: () => Navigator.pop(context),
+              width: 120,
+            )
+          ],
+        ).show();
+        return false;
+      }
+    } catch (e) {
+      print (e);
+      await _updated();
+      Alert(
+        style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ,isCloseButton: false,
+          isOverlayTapDismiss: false,titleStyle: TextStyle(
+            fontSize: 17.0,fontWeight: FontWeight.w600,
+          ),descStyle: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,color: Colors.black45),),
+        context: context,
+        title: "Error",
+        desc: "Network Failure",
+        buttons: [
+          DialogButton(
+            color: Colors.transparent,
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.green, fontSize: 20,fontWeight: FontWeight.w500),
+            ),
+            onPressed: () => Navigator.pop(context),
+            width: 120,
+          )
+        ],
+      ).show();
+      return false;
+    }
   }
 
-  Widget _buildStatusButton(int status){
-    print(status);
+  Widget _buildStatusButton(int status) {
     Widget text=Text("");
     if (status==1){
       text=Text("Pending",style: TextStyle(color: Colors.red));
     }else if (status==2){
-      text=Text("On going",style: TextStyle(color: Colors.blue));
+      text=Text("On Going",style: TextStyle(color: Colors.blue));
     }else{
       text=Text("Completed",style: TextStyle(color: Colors.green));
     }
     return (text);
   }
 
+  String getURL(int userId,int taskId,int status) {
+    String url = 'http://192.168.8.108:3000/updatestatus/'+userId.toString()+'/'+taskId.toString()+'/'+status.toString();
+    return url;
+  }
+
+  Future<int> changeStatus(int status) async{
+    if (status == 1) {
+      status = 2;
+      print("1 to 2");
+    } else if (status == 2) {
+      status = 3;
+      print("2 to 3");
+    } else if (status == 3) {
+      status = 1;
+      print("3 to 1");
+    }
+    return status;
+  }
+
+  void navigateToTasks() {
+    Navigator.of(context).pushReplacementNamed('/tasks');
+  }
 
 }

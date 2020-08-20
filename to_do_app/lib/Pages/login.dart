@@ -1,10 +1,10 @@
 import 'dart:convert';
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:http/http.dart' as http;
-import 'package:toast/toast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
 
@@ -44,6 +44,16 @@ class _LoginPageState extends State<LoginPage> {
     this.password=passwordController.text.toString();
   }
 
+  setLoggedInStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isLoggedIn', true);
+  }
+
+  setId(int id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt('userId', id );
+  }
+
   void _resetState() {
     setState(() {
       _isUploading = false;
@@ -55,10 +65,18 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          _mainContent(context),
           Container(height: 35,
-              color: Theme.of(context).accentColor),
+              color: Theme.of(context).accentColor
+          ),
+          Container(
+                decoration: BoxDecoration(
+                    color: Theme.of(context).accentColor.withOpacity(0.20),
+                    borderRadius: BorderRadius.circular(32)
+                ),
+            height:(MediaQuery.of(context).size.height+60) / 2,
+          ),
           _login(context),
+
         ],
       ),
     );
@@ -86,8 +104,8 @@ class _LoginPageState extends State<LoginPage> {
               child:Text("LOGIN",
                 style: TextStyle(
                     fontSize: 20.0,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).accentColor
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black45
                 ),)
           ),
           Padding(
@@ -135,7 +153,6 @@ class _LoginPageState extends State<LoginPage> {
               if (_formKey.currentState.validate()) {
                 _uploadCredentials();
               }
-
             },
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),side: BorderSide(color:Theme.of(context).accentColor )),
             child: Text("Login"),
@@ -170,30 +187,30 @@ class _LoginPageState extends State<LoginPage> {
       final response = await http.get(getURL());
       if (response.statusCode == 200) {
         print("200");
-        final Map<String, dynamic> prediction = json.decode(response.body);
+        final Map<String, dynamic> resp = json.decode(response.body);
 //        _resetState();
-        print(prediction);
-        Toast.show("Login successful!", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        await setLoggedInStatus();
+        print(resp);
+        setId(resp['Id']);
         navigateToTasks();
-        return prediction;
+        return resp;
       } else {
+        print ("response");
         print(response.toString());
-        Toast.show("Login failed! Please retry.", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-        print ("null");
         Alert(
-          style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ),
+          style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ,isCloseButton: false,
+            isOverlayTapDismiss: false,titleStyle: TextStyle(
+              fontSize: 17.0,fontWeight: FontWeight.w600,
+            ),descStyle: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,color: Colors.black45),),
           context: context,
-//          type: AlertType.warning,
           title: "Error",
           desc: "Failed to login",
           buttons: [
             DialogButton(
-              color: Colors.green.withOpacity(0.75),
+              color: Colors.transparent,
               child: Text(
-                "Retry",
-                style: TextStyle(color: Colors.white, fontSize: 17),
+                "Cancel",
+                style: TextStyle(color: Colors.green, fontSize: 20,fontWeight: FontWeight.w500),
               ),
               onPressed: () => Navigator.pop(context),
               width: 120,
@@ -203,13 +220,28 @@ class _LoginPageState extends State<LoginPage> {
         return null;
       }
     } catch (e) {
-      Toast.show("Login failed! Please retry.", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
       print (e);
+      Alert(
+        style: AlertStyle(backgroundColor:Colors.white.withOpacity(0.75) ,isCloseButton: false,
+          isOverlayTapDismiss: false,titleStyle: TextStyle(
+            fontSize: 17.0,fontWeight: FontWeight.w600,
+          ),descStyle: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,color: Colors.black45),),
+        context: context,
+        title: "Error",
+        desc: "Network failure",
+        buttons: [
+          DialogButton(
+            color: Colors.transparent,
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.green, fontSize: 20,fontWeight: FontWeight.w500),
+            ),
+            onPressed: () => Navigator.pop(context),
+            width: 120,
+          )
+        ],
+      ).show();
       return null;
     }
   }
-
-
-
 }

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import './events_page.dart';
-import './main_content_tasks.dart';
 
 class AboutPage extends StatefulWidget {
 

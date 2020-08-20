@@ -1,7 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:todoapp/Pages/leaderBoard.dart';
 import './main_content_tasks.dart';
-import './events_page.dart';
 
 class MainContentLeaderboard extends StatefulWidget {
 
@@ -56,17 +57,31 @@ class _MainContentLeaderboardState extends State<MainContentLeaderboard> {
 
   Widget _mainContent(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         SizedBox(height:24),
-        Padding(
-          padding: EdgeInsets.only(left:24.0,right: 24.0,top: 24.0,bottom: 48.0),
-          child: Text("Leaderboard",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w300)
+        Container(
+          decoration: BoxDecoration(
+              color: Theme.of(context).accentColor.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(32.0)
+          ),
+          child:Padding(
+            padding: EdgeInsets.only(left:24.0,right: 24.0,top: 24.0,bottom: 48.0),
+            child: Text("Leaderboard",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w300)
+            ),
           ),
         ),
-        Expanded(child:LeaderboardPage())
-
+        SizedBox(height:24),
+        Expanded(
+    child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children : <Widget>[Text("This feature will be available soon",
+    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300)
+          ),]
+        )
+        )
       ],
     );
   }
